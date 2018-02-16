@@ -9,7 +9,7 @@ import std.traits;
 import std.json : JSONValue, JSON_TYPE;
 static import std.json;
 
-auto valueify (T)(in T value) pure {
+private auto valueify (T)(in T value) pure {
 	static if (
 		isArray!T ||
 		isBoolean!T ||
@@ -29,7 +29,7 @@ auto valueify (T)(in T value) pure {
 	}
 }
 
-auto devalueify (T)(in JSONValue j) {
+private auto devalueify (T)(in JSONValue j) {
 	static if (isArray!T) {
 		static if (isNarrowString!T) {
 			assert(j.type is JSON_TYPE.STRING);
@@ -90,14 +90,13 @@ auto parse (T)(in string s) {
 }
 
 unittest {
-	import std.stdio;
-
 	struct Bar {
 		double a;
 		float b;
 		string c;
 		char[] d;
 	}
+
 	struct Foo {
 		int a;
 		ushort b;
@@ -105,11 +104,10 @@ unittest {
 		ushort[2] d;
 		Bar child;
 	}
-	const foo = Foo(12345, 0x10, 'z', [7,8], Bar(99.001, 200.06335, "foo", ['a', 'b']));
 
-	const s = stringify(foo);
-	writeln(s);
+	const expected = Foo(12345, 0x10, 'z', [7,8], Bar(99.001, 200.06335, "foo", ['a', 'b']));
+	const str = stringify(expected);
+	const actual = parse!Foo(str);
 
-	const p = parse!Foo(s);
-	writeln(p);
+	assert(actual == expected);
 }
